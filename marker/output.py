@@ -20,20 +20,16 @@ def markdown_exists(out_folder, fname):
     return os.path.exists(out_filename)
 
 
-def save_markdown(out_folder, fname, full_text, images, out_metadata):
+def save_markdown(out_folder, fname, full_text):
     subfolder_path = get_subfolder_path(out_folder, fname)
     os.makedirs(subfolder_path, exist_ok=True)
 
     markdown_filepath = get_markdown_filepath(out_folder, fname)
-    out_meta_filepath = markdown_filepath.rsplit(".", 1)[0] + "_meta.json"
+    
 
     with open(markdown_filepath, "w+", encoding='utf-8') as f:
         f.write(full_text)
-    with open(out_meta_filepath, "w+") as f:
-        f.write(json.dumps(out_metadata, indent=4))
+  
 
-    for filename, image in images.items():
-        image_filepath = os.path.join(subfolder_path, filename)
-        image.save(image_filepath, "PNG")
-
+  
     return subfolder_path
