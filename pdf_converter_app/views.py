@@ -19,33 +19,43 @@ import os
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.conf import settings
 
+
+import os
+import json
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
 configure_logging()
+
 def upload_pdf(request):
     if request.method == 'POST' and request.FILES['pdf']:
         pdf_file = request.FILES['pdf']
-        fs = FileSystemStorage(location='input')
+
+        # Save the uploaded PDF to the media/input directory
+        input_folder = os.path.join(settings.MEDIA_ROOT, 'input')
+        fs = FileSystemStorage(location=input_folder)
         fname = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(fname)
 
-        # Assume `load_all_models` and `convert_single_pdf` are defined elsewhere
+        # Load models and convert PDF to Markdown (assuming these functions are defined)
         model_lst = load_all_models()
         full_text, images, out_meta = convert_single_pdf(file_path, model_lst, max_pages=10, langs=None, batch_multiplier=2)
 
-        # Generate the output markdown file path
+        # Prepare the output Markdown filename
         fname_without_ext = os.path.splitext(os.path.basename(fname))[0]
-        output_file_path = save_markdown('output', fname_without_ext, full_text)
-
-        # Ensure the file is saved with a .md extension
         markdown_filename = f"{fname_without_ext}.md"
-        markdown_output_path = os.path.join(settings.MEDIA_ROOT, 'output', markdown_filename)
+        output_folder = os.path.join(settings.MEDIA_ROOT, 'output')
+        markdown_output_path = os.path.join(output_folder, markdown_filename)
 
-        # Save the markdown content to the output directory
+        # Save the converted Markdown content
         with open(markdown_output_path, 'w') as f:
             f.write(full_text)
 
-        # Generate the URL to download the file
+        # Generate the URL for the user to download the file
         file_url = os.path.join(settings.MEDIA_URL, 'output', markdown_filename)
 
-        return render(request, 'pdf_converter_app/result.html', {'file_url': file_url})
+        # Return the file URL as a JSON response
+        return JsonResponse({'file_url': file_url})
 
     return render(request, 'pdf_converter_app/upload.html')
