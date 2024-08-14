@@ -7,6 +7,17 @@
     <title>PDF to Markdown Converter</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         /* Loading Bar Styles */
         #loadingBarContainer {
             display: none;
@@ -20,7 +31,7 @@
         #loadingBar {
             width: 0%;
             height: 30px;
-            background-color: green;
+            background-color: #4CAF50;
             text-align: center;
             line-height: 30px; /* Adjusted for centering text */
             font-weight: bold;
@@ -30,6 +41,72 @@
 
         #status {
             margin-top: 10px;
+        }
+
+        /* Dropdown Container */
+        .dropdown {
+            position: relative;
+            width: 100%;
+            display: inline-block;
+        }
+
+        /* Search Box as Dropdown Button */
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            background-color: #f4f4f4;
+            transition: background-color 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+        }
+
+        /* Dropdown Content */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            z-index: 1;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            margin-top: 5px;
+        }
+
+        /* Dropdown Option */
+        .dropdown-content div {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content div:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Display Dropdown */
+        .dropdown.open .dropdown-content {
+            display: block;
+        }
+
+        /* Styling for Dropdown Container */
+        .dropdown-button-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-button-container input {
+            border-radius: 5px 5px 0 0;
         }
     </style>
 </head>
@@ -42,7 +119,21 @@
                 <label for="pdf">Choose a PDF file:</label>
                 <input type="file" id="pdf" name="pdf" accept=".pdf" required>
             </div>
-            <button type="submit">Upload and Convert</button>
+            <div class="form-group">
+                <label for="language">Select language:</label>
+                <div class="dropdown" id="dropdown">
+                    <div class="dropdown-button-container">
+                        <input type="text" id="searchInput" placeholder="Select a language">
+                    </div>
+                    <div class="dropdown-content" id="dropdownContent">
+                        {% for code, language in languages.items %}
+                            <div data-value="{{ code }}">{{ language }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" id="language" name="language">
+            </div>
+            <button type="submit" style="padding: 10px 20px; font-size: 16px; color: white; background-color: #4CAF50; border: none; border-radius: 5px; cursor: pointer;">Upload and Convert</button>
         </form>
 
         <!-- Loading Bar -->
@@ -58,6 +149,45 @@
     </div>
 
     <script>
+        // Toggle dropdown visibility
+        document.getElementById('searchInput').addEventListener('click', function() {
+            document.getElementById('dropdown').classList.toggle('open');
+        });
+
+        // Filter dropdown options based on search input
+        document.getElementById('searchInput').addEventListener('input', function() {
+            var searchValue = this.value.toLowerCase();
+            var items = document.querySelectorAll('#dropdownContent div[data-value]');
+
+            items.forEach(function(item) {
+                var text = item.textContent.toLowerCase();
+                if (text.includes(searchValue)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Handle selection of an option
+        document.querySelectorAll('#dropdownContent div[data-value]').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var selectedValue = this.getAttribute('data-value');
+                var selectedText = this.textContent;
+
+                document.getElementById('searchInput').value = selectedText;
+                document.getElementById('language').value = selectedValue;
+                document.getElementById('dropdown').classList.remove('open');
+            });
+        });
+
+        // Close the dropdown if clicked outside
+        window.addEventListener('click', function(event) {
+            if (!document.getElementById('dropdown').contains(event.target)) {
+                document.getElementById('dropdown').classList.remove('open');
+            }
+        });
+
         document.getElementById('uploadForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
