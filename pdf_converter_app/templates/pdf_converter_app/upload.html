@@ -7,27 +7,25 @@
     <title>PDF to Markdown Converter</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
-        /* Loading Spinner Styles */
-        #loadingCircle {
+        /* Loading Bar Styles */
+        #loadingBarContainer {
             display: none;
+            width: 100%;
+            background-color: lightgrey;
+            border-radius: 5px;
+            overflow: hidden;
             margin-top: 20px;
-            width: 80px;
-            height: 80px;
-            border: 8px solid lightgrey;
-            border-top: 8px solid green;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            position: relative;
-            text-align: center;
-            line-height: 64px; /* Adjusted for centering text */
-            font-weight: bold;
-            font-size: 18px;
-            color: black;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #loadingBar {
+            width: 0%;
+            height: 30px;
+            background-color: green;
+            text-align: center;
+            line-height: 30px; /* Adjusted for centering text */
+            font-weight: bold;
+            color: white;
+            transition: width 0.4s ease; /* Smooth animation */
         }
 
         #status {
@@ -47,8 +45,10 @@
             <button type="submit">Upload and Convert</button>
         </form>
 
-        <!-- Loading Circle with Percentage -->
-        <div id="loadingCircle">0%</div>
+        <!-- Loading Bar -->
+        <div id="loadingBarContainer">
+            <div id="loadingBar">0%</div>
+        </div>
 
         <p id="status"></p>
 
@@ -61,9 +61,12 @@
         document.getElementById('uploadForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            // Show loading circle
-            var loadingCircle = document.getElementById('loadingCircle');
-            loadingCircle.style.display = 'block';
+            // Show loading bar
+            var loadingBarContainer = document.getElementById('loadingBarContainer');
+            var loadingBar = document.getElementById('loadingBar');
+            loadingBarContainer.style.display = 'block';
+            loadingBar.style.width = '0%';
+            loadingBar.innerText = '0%';
 
             var formData = new FormData(this);
             var xhr = new XMLHttpRequest();
@@ -73,14 +76,13 @@
             xhr.upload.onprogress = function(e) {
                 if (e.lengthComputable) {
                     var percentComplete = Math.round((e.loaded / e.total) * 100);
-                    loadingCircle.innerText = percentComplete + '%';
+                    loadingBar.style.width = percentComplete + '%';
+                    loadingBar.innerText = percentComplete + '%';
                 }
             };
 
             xhr.onload = function() {
-                // Hide loading circle
-                loadingCircle.style.display = 'none';
-
+                // Hide loading bar after completion
                 if (xhr.status === 200) {
                     var response = JSON.parse(xhr.responseText);
                     if (response.file_url) {
@@ -91,10 +93,11 @@
                 } else {
                     document.getElementById('status').innerHTML = 'Conversion failed. Please try again.';
                 }
+                loadingBarContainer.style.display = 'none';
             };
 
             xhr.onerror = function() {
-                loadingCircle.style.display = 'none';
+                loadingBarContainer.style.display = 'none';
                 document.getElementById('status').innerHTML = 'An error occurred. Please try again.';
             };
 

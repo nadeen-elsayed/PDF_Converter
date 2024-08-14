@@ -40,7 +40,7 @@ def upload_pdf(request):
 
         # Load models and convert PDF to Markdown (assuming these functions are defined)
         model_lst = load_all_models()
-        full_text, images, out_meta = convert_single_pdf(file_path, model_lst, max_pages=10, langs=None, batch_multiplier=2)
+        full_text = convert_single_pdf(file_path, model_lst, max_pages=10, langs=None, batch_multiplier=2)
 
         # Prepare the output Markdown filename
         fname_without_ext = os.path.splitext(os.path.basename(fname))[0]
