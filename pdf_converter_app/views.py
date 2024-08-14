@@ -160,7 +160,6 @@ CODE_TO_LANGUAGE = {
     'yi': 'Yiddish',
     'zh': 'Chinese',
 }
-
 def upload_pdf(request):
     if request.method == 'POST' and request.FILES.get('pdf'):
         pdf_file = request.FILES['pdf']
@@ -171,8 +170,7 @@ def upload_pdf(request):
             raise ValueError(f"Invalid language code {selected_lang} for Surya OCR")
 
         # Lookup the language name
-        language_name = list({i for i in CODE_TO_LANGUAGE if CODE_TO_LANGUAGE[i]==selected_lang})
-        #= CODE_TO_LANGUAGE.get(selected_lang, 'Unknown Language')
+        language_name = CODE_TO_LANGUAGE.get(selected_lang, 'Unknown Language')
 
         # Save the uploaded PDF to the media/input directory
         input_folder = os.path.join(settings.MEDIA_ROOT, 'input')
@@ -182,7 +180,7 @@ def upload_pdf(request):
 
         # Load models and convert PDF to Markdown
         model_lst = load_all_models()
-        full_text = convert_single_pdf(file_path, model_lst, max_pages=10, langs=language_name, batch_multiplier=2)
+        full_text = convert_single_pdf(file_path, model_lst, max_pages=10, langs=[language_name], batch_multiplier=2)
 
         # Prepare the output Markdown filename
         fname_without_ext = os.path.splitext(os.path.basename(fname))[0]
@@ -197,7 +195,11 @@ def upload_pdf(request):
         # Generate the URL for the user to download the file
         file_url = os.path.join(settings.MEDIA_URL, 'output', markdown_filename)
 
-        # Return the file URL as a JSON response
-        return JsonResponse({'file_url': file_url, 'language': language_name})
+        # Return the file URL and markdown content as a JSON response
+        return JsonResponse({
+            'file_url': file_url,
+            'markdown_content': full_text,  # This will populate the text editor
+            'language': language_name
+        })
 
     return render(request, 'pdf_converter_app/upload.html', {'languages': CODE_TO_LANGUAGE})

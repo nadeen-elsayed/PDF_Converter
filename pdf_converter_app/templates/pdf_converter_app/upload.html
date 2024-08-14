@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,12 +11,56 @@
         /* General Styles */
         body {
             font-family: Arial, sans-serif;
+            background-color: rgb(36, 41, 46);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            display: flex;
+            background-color: rgb(43, 49, 55);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 90%;
+            max-width: 1200px;
+            height: 80%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Left Section Styles */
+        .left-section {
+            width: 40%;
             padding: 20px;
+            box-sizing: border-box;
+            border-right: 1px solid rgb(60, 65, 70);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .left-section h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .left-section .form-group {
+            margin-bottom: 20px;
+        }
+
+        .left-section button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: rgb(45, 186, 78);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
         /* Loading Bar Styles */
@@ -33,17 +78,39 @@
             height: 30px;
             background-color: #4CAF50;
             text-align: center;
-            line-height: 30px; /* Adjusted for centering text */
+            line-height: 30px;
             font-weight: bold;
             color: white;
-            transition: width 0.4s ease; /* Smooth animation */
+            transition: width 0.4s ease;
         }
 
         #status {
             margin-top: 10px;
         }
 
-        /* Dropdown Container */
+        /* Right Section Styles */
+        .right-section {
+            width: 60%;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-section textarea {
+            width: 100%;
+            height: 100%;
+            background-color: rgb(60, 65, 70);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: none;
+        }
+
+        /* Dropdown Styles */
         .dropdown {
             position: relative;
             width: 100%;
@@ -110,56 +177,62 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>Convert PDF to Markdown</h1>
-        <form id="uploadForm" action="{% url 'upload_pdf' %}" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="pdf">Choose a PDF file:</label>
-                <input type="file" id="pdf" name="pdf" accept=".pdf" required>
-            </div>
-            <div class="form-group">
-                <label for="language">Select language:</label>
-                <div class="dropdown" id="dropdown">
-                    <div class="dropdown-button-container">
-                        <input type="text" id="searchInput" placeholder="Select a language">
-                    </div>
-                    <div class="dropdown-content" id="dropdownContent">
-                        {% for code, language in languages.items %}
-                            <div data-value="{{ code }}">{{ language }}</div>
-                        {% endfor %}
-                    </div>
+        <div class="left-section">
+            <h1>PDF Converter</h1>
+            <form id="uploadForm" action="{% url 'upload_pdf' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="pdf">Choose a PDF file:</label>
+                    <input type="file" id="pdf" name="pdf" accept=".pdf" required>
                 </div>
-                <input type="hidden" id="language" name="language">
+                <div class="form-group">
+                    <label for="language">Select language:</label>
+                    <div class="dropdown" id="dropdown">
+                        <div class="dropdown-button-container">
+                            <input type="text" id="searchInput" placeholder="Select a language">
+                        </div>
+                        <div class="dropdown-content" id="dropdownContent">
+                            {% for code, language in languages.items %}
+                            <div data-value="{{ code }}">{{ language }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <input type="hidden" id="language" name="language">
+                </div>
+                <button type="submit">Upload and Convert</button>
+            </form>
+
+            <!-- Loading Bar -->
+            <div id="loadingBarContainer">
+                <div id="loadingBar">0%</div>
             </div>
-            <button type="submit" style="padding: 10px 20px; font-size: 16px; color: white; background-color: #4CAF50; border: none; border-radius: 5px; cursor: pointer;">Upload and Convert</button>
-        </form>
 
-        <!-- Loading Bar -->
-        <div id="loadingBarContainer">
-            <div id="loadingBar">0%</div>
-        </div>
+            <p id="status"></p>
 
-        <p id="status"></p>
-
-        {% if error %}
+            {% if error %}
             <p class="error">{{ error }}</p>
-        {% endif %}
+            {% endif %}
+        </div>
+        <div class="right-section">
+            <textarea id="markdownOutput" readonly placeholder="Markdown output will appear here..."></textarea>
+        </div>
     </div>
 
     <script>
         // Toggle dropdown visibility
-        document.getElementById('searchInput').addEventListener('click', function() {
+        document.getElementById('searchInput').addEventListener('click', function () {
             document.getElementById('dropdown').classList.toggle('open');
         });
 
         // Filter dropdown options based on search input
-        document.getElementById('searchInput').addEventListener('input', function() {
+        document.getElementById('searchInput').addEventListener('input', function () {
             var searchValue = this.value.toLowerCase();
             var items = document.querySelectorAll('#dropdownContent div[data-value]');
 
-            items.forEach(function(item) {
+            items.forEach(function (item) {
                 var text = item.textContent.toLowerCase();
                 if (text.includes(searchValue)) {
                     item.style.display = 'block';
@@ -170,8 +243,8 @@
         });
 
         // Handle selection of an option
-        document.querySelectorAll('#dropdownContent div[data-value]').forEach(function(item) {
-            item.addEventListener('click', function() {
+        document.querySelectorAll('#dropdownContent div[data-value]').forEach(function (item) {
+            item.addEventListener('click', function () {
                 var selectedValue = this.getAttribute('data-value');
                 var selectedText = this.textContent;
 
@@ -182,13 +255,13 @@
         });
 
         // Close the dropdown if clicked outside
-        window.addEventListener('click', function(event) {
+        window.addEventListener('click', function (event) {
             if (!document.getElementById('dropdown').contains(event.target)) {
                 document.getElementById('dropdown').classList.remove('open');
             }
         });
 
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
             // Show loading bar
@@ -203,7 +276,7 @@
 
             xhr.open('POST', this.action, true);
 
-            xhr.upload.onprogress = function(e) {
+            xhr.upload.onprogress = function (e) {
                 if (e.lengthComputable) {
                     var percentComplete = Math.round((e.loaded / e.total) * 100);
                     loadingBar.style.width = percentComplete + '%';
@@ -212,21 +285,25 @@
             };
 
             xhr.onload = function() {
-                // Hide loading bar after completion
-                if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.file_url) {
-                        document.getElementById('status').innerHTML = 'Conversion complete! <a href="' + response.file_url + '">Download Markdown</a>';
+            // Hide loading bar after completion
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                if (response.file_url) {
+                    document.getElementById('status').innerHTML = 'Conversion complete! <a href="' + response.file_url + '">Download Markdown</a>';
+                    if (response.markdown_content) {
+                        document.getElementById('markdownOutput').value = response.markdown_content;
                     } else {
-                        document.getElementById('status').innerHTML = 'Conversion failed. Please try again.';
+                        document.getElementById('markdownOutput').value = 'No markdown content returned.';
                     }
                 } else {
                     document.getElementById('status').innerHTML = 'Conversion failed. Please try again.';
                 }
-                loadingBarContainer.style.display = 'none';
-            };
-
-            xhr.onerror = function() {
+            } else {
+                document.getElementById('status').innerHTML = 'Conversion failed. Please try again.';
+            }
+            loadingBarContainer.style.display = 'none';
+        };
+            xhr.onerror = function () {
                 loadingBarContainer.style.display = 'none';
                 document.getElementById('status').innerHTML = 'An error occurred. Please try again.';
             };
@@ -235,4 +312,5 @@
         });
     </script>
 </body>
+
 </html>
