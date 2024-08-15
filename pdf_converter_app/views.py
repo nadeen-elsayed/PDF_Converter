@@ -1,67 +1,17 @@
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-import os
-from convert_single import convert_single_pdf
-import time
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import pypdfium2 # Needs to be at the top to avoid warnings
+
+
 import os
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1" # For some reason, transformers decided to use .isin for a simple op, which is not supported on MPS
 
-import argparse
-from marker.convert import convert_single_pdf
-from marker.logger import configure_logging
-from marker.models import load_all_models
-
-from marker.output import save_markdown
-import os
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.conf import settings
 
-
-import os
-import json
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-configure_logging()
-
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from django.http import JsonResponse
-import os
 from convert_single import convert_single_pdf
 from marker.convert import convert_single_pdf
 from marker.logger import configure_logging
 from marker.models import load_all_models
-from marker.output import save_markdown
-
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from django.http import JsonResponse
-import os
-from convert_single import convert_single_pdf
-from marker.convert import convert_single_pdf
-from marker.logger import configure_logging
-from marker.models import load_all_models
-from marker.output import save_markdown
-
-configure_logging()
-
-from django.shortcuts import render
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from django.http import JsonResponse
-import os
-from convert_single import convert_single_pdf
-from marker.convert import convert_single_pdf
-from marker.logger import configure_logging
-from marker.models import load_all_models
-from marker.output import save_markdown
 
 configure_logging()
 
