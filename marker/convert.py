@@ -101,7 +101,7 @@ def convert_single_pdf(
 
     # Fix code blocks
     code_block_count = identify_code_blocks(pages)
- 
+    # indent blocks
     indent_blocks(pages)
 
     # Fix table blocks
