@@ -99,13 +99,7 @@ def convert_single_pdf(
     sort_blocks_in_reading_order(pages)
     flush_cuda_memory()
 
-    # Fix code blocks
-    code_block_count = identify_code_blocks(pages)
-    # indent blocks
-    indent_blocks(pages)
-
-    # Fix table blocks
-    table_count = format_tables(pages)
+  
     
 
     for page in pages:
