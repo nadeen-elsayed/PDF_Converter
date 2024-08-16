@@ -27,7 +27,6 @@ from marker.cleaners.headings import split_heading_blocks
 from marker.cleaners.fontstyle import find_bold_italic
 from marker.postprocessors.markdown import merge_spans, merge_lines, get_full_text
 from marker.cleaners.text import cleanup_text
-from marker.images.extract import extract_images
 
 
 from typing import List, Dict, Tuple, Optional
@@ -116,9 +115,7 @@ def convert_single_pdf(
     flush_cuda_memory()
    
 
-    # Extract images and figures
-    if settings.EXTRACT_IMAGES:
-        extract_images(doc, pages)
+  
 
     # Split out headers
     split_heading_blocks(pages)
