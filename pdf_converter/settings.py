@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '3#wubp%#qt*n5akocx4+^$7=j9hpe@hel&!(#)nr-@qzkwsv_0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 import dj_database_url
 
