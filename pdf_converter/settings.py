@@ -25,8 +25,16 @@ SECRET_KEY = '3#wubp%#qt*n5akocx4+^$7=j9hpe@hel&!(#)nr-@qzkwsv_0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+import dj_database_url
 
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "pdf_converter.pythonanywhere.com"]
+
+# Replace it with your DATABASES.
+DATABASES = {
+    'default': dj_database_url.config(
+        default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
+    )
+}
 
 # Application definition
 
@@ -118,7 +126,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-# URL to use when referring to static files located in STATIC_ROOT
 STATIC_URL = '/static/'
 
 # The absolute path to the directory where collectstatic will collect static files for deployment
