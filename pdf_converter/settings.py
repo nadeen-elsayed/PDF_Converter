@@ -27,7 +27,7 @@ DEBUG = False
 
 import dj_database_url
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "pdf_converter.pythonanywhere.com"]
+ALLOWED_HOSTS = ["*"]
 
 # Replace it with your DATABASES.
 DATABASES = {
