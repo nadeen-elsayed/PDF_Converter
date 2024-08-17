@@ -1,1 +1,1 @@
-web: gunicorn 'pdf_converter.wsgi'
+web: gunicorn pdf_converter.wsgi --log-file -
