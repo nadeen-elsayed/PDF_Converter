@@ -25,16 +25,9 @@ SECRET_KEY = '3#wubp%#qt*n5akocx4+^$7=j9hpe@hel&!(#)nr-@qzkwsv_0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-import dj_database_url
 
 ALLOWED_HOSTS = ["*"]
 
-# Replace it with your DATABASES.
-DATABASES = {
-    'default': dj_database_url.config(
-        default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
-    )
-}
 
 # Application definition
 
