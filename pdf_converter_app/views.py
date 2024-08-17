@@ -8,7 +8,6 @@ from django.conf import settings
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from convert_single import convert_single_pdf
 from marker.convert import convert_single_pdf
 from marker.logger import configure_logging
 from marker.models import load_all_models
