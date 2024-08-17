@@ -27,7 +27,8 @@ from marker.cleaners.headings import split_heading_blocks
 from marker.cleaners.fontstyle import find_bold_italic
 from marker.postprocessors.markdown import merge_spans, merge_lines, get_full_text
 from marker.cleaners.text import cleanup_text
-
+from marker.images.extract import extract_images
+from marker.images.save import images_to_dict
 
 from typing import List, Dict, Tuple, Optional
 from marker.settings import settings
@@ -46,6 +47,8 @@ def convert_single_pdf(
     if langs is None:
         langs = [settings.DEFAULT_LANG]
 
+    if metadata:
+        langs = metadata.get("languages", langs)
 
     langs = replace_langs_with_codes(langs)
     validate_langs(langs)
@@ -53,10 +56,14 @@ def convert_single_pdf(
     # Find the filetype
     filetype = find_filetype(fname)
 
-  
+    # Setup output metadata
+    out_meta = {
+        "languages": langs,
+        "filetype": filetype,
+    }
 
     if filetype == "other": # We can't process this file
-        return ""
+        return "", {}, out_meta
 
     # Get initial text blocks from the pdf
     doc = pdfium.PdfDocument(fname)
@@ -66,7 +73,16 @@ def convert_single_pdf(
         max_pages=max_pages,
         start_page=start_page
     )
-  
+    out_meta.update({
+        "toc": toc,
+        "pages": len(pages),
+    })
+
+    # Trim pages from doc to align with start page
+    if start_page:
+        for page_idx in range(start_page):
+            doc.del_page(0)
+
     # Unpack models from list
     texify_model, layout_model, order_model, edit_model, detection_model, ocr_model = model_lst
 
@@ -78,13 +94,17 @@ def convert_single_pdf(
     pages, ocr_stats = run_ocr(doc, pages, langs, ocr_model, batch_multiplier=batch_multiplier)
     flush_cuda_memory()
 
- 
+    out_meta["ocr_stats"] = ocr_stats
+    if len([b for p in pages for b in p.blocks]) == 0:
+        print(f"Could not extract any text blocks for {fname}")
+        return "", {}, out_meta
+
     surya_layout(doc, pages, layout_model, batch_multiplier=batch_multiplier)
     flush_cuda_memory()
 
     # Find headers and footers
     bad_span_ids = filter_header_footer(pages)
-
+    out_meta["block_stats"] = {"header_footer": len(bad_span_ids)}
 
     # Add block types in
     annotate_block_types(pages)
@@ -98,8 +118,14 @@ def convert_single_pdf(
     sort_blocks_in_reading_order(pages)
     flush_cuda_memory()
 
-  
-    
+    # Fix code blocks
+    code_block_count = identify_code_blocks(pages)
+    out_meta["block_stats"]["code"] = code_block_count
+    indent_blocks(pages)
+
+    # Fix table blocks
+    table_count = format_tables(pages)
+    out_meta["block_stats"]["table"] = table_count
 
     for page in pages:
         for block in page.blocks:
@@ -113,9 +139,11 @@ def convert_single_pdf(
         batch_multiplier=batch_multiplier
     )
     flush_cuda_memory()
-   
+    out_meta["block_stats"]["equations"] = eq_stats
 
-  
+    # Extract images and figures
+    if settings.EXTRACT_IMAGES:
+        extract_images(doc, pages)
 
     # Split out headers
     split_heading_blocks(pages)
@@ -140,6 +168,7 @@ def convert_single_pdf(
         batch_multiplier=batch_multiplier
     )
     flush_cuda_memory()
-  
+    out_meta["postprocess_stats"] = {"edit": edit_stats}
+    doc_images = images_to_dict(pages)
 
-    return full_text
+    return full_text, doc_images, out_meta
