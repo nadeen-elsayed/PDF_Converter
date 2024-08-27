@@ -29,12 +29,7 @@ import dj_database_url
 
 ALLOWED_HOSTS = ["*"]
 
-# Replace it with your DATABASES.
-DATABASES = {
-    'default': dj_database_url.config(
-        default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
-    )
-}
+
 
 # Application definition
 
@@ -46,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pdf_converter_app',
-    "whitenoise.runserver_nostatic",
+     "whitenoise.runserver_nostatic",
+  
 ]
 
 MIDDLEWARE = [
@@ -59,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+   
 ]
 
 ROOT_URLCONF = 'pdf_converter.urls'
@@ -82,15 +79,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pdf_converter.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 
 # Password validation
@@ -141,4 +129,5 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+

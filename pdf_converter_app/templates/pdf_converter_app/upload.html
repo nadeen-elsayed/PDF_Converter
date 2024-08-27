@@ -3,10 +3,17 @@
 <html lang="en">
 
 <head>
+    {% load static %}
+
+    <link rel="shortcut icon" href="">
+    <link rel="icon" href="static/favicon.ico">
+    {% load static %}
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF to Markdown Converter</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+   
     <style>
         /* General Styles */
         body {
@@ -126,7 +133,7 @@
 
 
 
-        .left-section button {
+        .left-section button, #copyButton {
             margin-top: 10px;
             width: 50%;
             padding: 12px 25px;
@@ -136,6 +143,11 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+        #copyButton{
+            width: 50%;
+            margin: auto ;
+            margin-top: 20px;
         }
 
         /* Right Section Styles */
@@ -480,6 +492,7 @@
         </div>
         <div class="right-section">
             <textarea id="markdownOutput" readonly placeholder="Markdown output will appear here..."></textarea>
+            <button id="copyButton">Copy Markdown</button>
         </div>
     </div>
 
@@ -555,7 +568,7 @@
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.responseText);
                 if (response.file_url) {
-                    document.getElementById('status').innerHTML = 'Conversion complete! <a href="' + response.file_url + '">Download Markdown</a>';
+                    document.getElementById('status').innerHTML = 'Conversion complete!';
                     if (response.markdown_content) {
                         document.getElementById('markdownOutput').value = response.markdown_content;
                     } else {
@@ -576,6 +589,19 @@
 
             xhr.send(formData);
         });
+        document.getElementById('copyButton').addEventListener('click', function() {
+        var markdownOutput = document.getElementById('markdownOutput');
+        
+        // Select the text area content
+        markdownOutput.select();
+        markdownOutput.setSelectionRange(0, 99999); // For mobile devices
+
+        // Copy the text inside the text area
+        document.execCommand('copy');
+
+        // Optionally alert the user
+        alert('Markdown content copied to clipboard!');
+    });
         
     </script>
 </body>

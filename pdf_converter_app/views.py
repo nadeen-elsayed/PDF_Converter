@@ -8,11 +8,11 @@ from django.conf import settings
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from convert_single import convert_single_pdf
+
 from marker.convert import convert_single_pdf
 from marker.logger import configure_logging
 from marker.models import load_all_models
-
+from django.http import HttpResponse
 configure_logging()
 
 CODE_TO_LANGUAGE = {
@@ -130,7 +130,7 @@ def upload_pdf(request):
 
         # Load models and convert PDF to Markdown
         model_lst = load_all_models()
-        full_text = convert_single_pdf(file_path, model_lst, max_pages=10, langs=[language_name], batch_multiplier=2)
+        full_text, doc_images, out_meta = convert_single_pdf(file_path, model_lst, max_pages=10, langs=[language_name], batch_multiplier=2)
 
         # Prepare the output Markdown filename
         fname_without_ext = os.path.splitext(os.path.basename(fname))[0]
@@ -149,7 +149,11 @@ def upload_pdf(request):
         return JsonResponse({
             'file_url': file_url,
             'markdown_content': full_text,  # This will populate the text editor
-            'language': language_name
+            'language': None
         })
 
     return render(request, 'pdf_converter_app/upload.html', {'languages': CODE_TO_LANGUAGE})
+
+
+def favicon(request):
+    return HttpResponse(status=204)
