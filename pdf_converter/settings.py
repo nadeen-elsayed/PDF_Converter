@@ -9,6 +9,10 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 from pathlib import Path
 import os
@@ -23,13 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '3#wubp%#qt*n5akocx4+^$7=j9hpe@hel&!(#)nr-@qzkwsv_0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-import dj_database_url
 
 ALLOWED_HOSTS = ["*"]
 
-
+# Replace it with your DATABASES.
+DATABASES = {
+    'default': dj_database_url.config(
+        default="sqlite:///" + os.path.join(BASE_DIR, "db.sqlite3")
+    )
+}
 
 # Application definition
 
@@ -79,6 +87,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pdf_converter.wsgi.application'
 
 
+# Database
+# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
