@@ -5,6 +5,7 @@ COPY requirements.txt /code/
 RUN pip install -r requirements.txt
 COPY . /code/
 # Collect static files
+RUN pip install PyMuPDF
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 RUN python manage.py collectstatic --noinput
 # Expose the port the app runs on
