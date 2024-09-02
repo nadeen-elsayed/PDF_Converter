@@ -9,12 +9,10 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 
-
-from marker.convert import convert_single_pdf
-from marker.logger import configure_logging
-from marker.models import load_all_models
 from django.http import HttpResponse
-configure_logging()
+
+import fitz  # PyMuPDF
+from markdownify import markdownify as md
 
 CODE_TO_LANGUAGE = {
     'af': 'Afrikaans',
@@ -116,40 +114,35 @@ def upload_pdf(request):
         pdf_file = request.FILES['pdf']
         selected_lang = request.POST.get('language', None)
 
-        # Validate the selected language code
-        if selected_lang and selected_lang not in CODE_TO_LANGUAGE:
-            raise ValueError(f"Invalid language code {selected_lang} for Surya OCR")
-
-        # Lookup the language name
-        language_name = CODE_TO_LANGUAGE.get(selected_lang, 'Unknown Language')
-
         # Save the uploaded PDF to the media/input directory
         input_folder = os.path.join(settings.MEDIA_ROOT, 'input')
         fs = FileSystemStorage(location=input_folder)
         fname = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(fname)
-
-        # Load models and convert PDF to Markdown
-        model_lst = load_all_models()
-        full_text = convert_single_pdf(file_path, model_lst, max_pages=10, langs=[language_name], batch_multiplier=2)
-
+ 
         # Prepare the output Markdown filename
         fname_without_ext = os.path.splitext(os.path.basename(fname))[0]
         markdown_filename = f"{fname_without_ext}.md"
         output_folder = os.path.join(settings.MEDIA_ROOT, 'output')
         markdown_output_path = os.path.join(output_folder, markdown_filename)
 
-        # Save the converted Markdown content
-        with open(markdown_output_path, 'w') as f:
-            f.write(full_text)
+       # Open the PDF file
+        pdf_document = fitz.open(file_path)
+        text_content = ""
 
-        # Generate the URL for the user to download the file
-        file_url = os.path.join(settings.MEDIA_URL, 'output', markdown_filename)
+        # Extract text from each page
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            text_content += page.get_text()
+        
+        # Convert the extracted text to Markdown
+        markdown_content = md(text_content)
+        
 
         # Return the file URL and markdown content as a JSON response
         return JsonResponse({
-            'file_url': file_url,
-            'markdown_content': full_text,  # This will populate the text editor
+            'file_url': 'placeholder',
+            'markdown_content': markdown_content,  # This will populate the text editor
             'language': None
         })
 
