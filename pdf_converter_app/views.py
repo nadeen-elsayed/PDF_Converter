@@ -10,9 +10,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from django.http import HttpResponse
+from llama_parse import LlamaParse  
 
-import fitz  # PyMuPDF
-from markdownify import markdownify as md
 
 CODE_TO_LANGUAGE = {
     'af': 'Afrikaans',
@@ -126,20 +125,23 @@ def upload_pdf(request):
         output_folder = os.path.join(settings.MEDIA_ROOT, 'output')
         markdown_output_path = os.path.join(output_folder, markdown_filename)
 
-       # Open the PDF file
-        pdf_document = fitz.open(file_path)
-        text_content = ""
+       
+       # Open the PDF and extract text as HTML
+      
+            
+        parser = LlamaParse(
+            api_key="llx-Os3yniibVv5kGn5P739p5o8Tzm9M14PDxCKYYbG0B19vfD1V",  # you will need an API key, get it from https://cloud.llamaindex.ai/
+            result_type="markdown"  # "markdown" and "text" are available
+        )
 
-        # Extract text from each page
-        for page_num in range(len(pdf_document)):
-            page = pdf_document[page_num]
-            text_content += page.get_text()
-        
-        # Convert the extracted text to Markdown
-        markdown_content = md(text_content)
-        
+        docs = parser.load_data(file_path)
+    
+        # Extract Markdown content
+        markdown_content = ""
+        for doc in docs:
+            if hasattr(doc, 'text'):
+                markdown_content += doc.text + "\n"
 
-        # Return the file URL and markdown content as a JSON response
         return JsonResponse({
             'file_url': 'placeholder',
             'markdown_content': markdown_content,  # This will populate the text editor
